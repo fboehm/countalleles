@@ -1,0 +1,62 @@
+---
+title: "`countalleles`: An R package for counting alleles in SNP genotypes"
+author: "Fred Boehm"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{countalleles: An R package for counting alleles in SNP genotypes}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: count_alleles_vignette.bib
+---
+
+
+Researchers who work with genomic data often encounter the need to convert A/C/T/G SNP genotypes to count-based SNP genotypes (0,1, or 2 copies of a given allele). To address this need, I've created the `countalleles` R package. The package contains three easy-to-use functions that, together, count the number of reference alleles in each subject's genotype at a single SNP locus. Throughout package assembly, we referred to Hadley Wickham's text "R packages" [@wickham2015r].
+
+## Reading HapMap data
+
+To illustrate uses of our functions, we work with freely available data from the HapMap Project. We focus on a single SNP genotype file, which we've also included in our package.
+
+We load the data into a table data frame using the dplyr package:
+
+```{r read_data}
+library(dplyr)
+chr22<- tbl_df(read.delim("../inst/extdata/genotypes_chr22_TSI_phase3.2_consensus.b36_fwd.txt", sep = c(" ")))
+```
+
+We see that the file contains chromosome 22 SNP genotypes for 88 Tuscans at 20,109 SNP loci. Additional columns contain SNP annotation information, such as rs ID, alleles, position, and strand. Each row consists of 11 columns of SNP annotation followed by 88 genotypes (one genotype per subject) at a single SNP.
+
+```{r lookat_data}
+head(chr22)
+tail(chr22)
+```
+
+## Counting alleles for a dimorphic SNP
+
+We assume that, for the 88 study subjects with data in our file, each SNP is dimorphic; that is, for each SNP, there are exactly two observed alleles and that these two alleles correspond to those for which the SNP probes were designed. 
+
+We read one SNP's genotypes into a vector `snp` by subsetting our table data frame `chr22` while omitting the first 11 entries in the row. Note that we need to convert the subsetted data frame to a character vector, which we do by first using `unlist` then using `as.character`. Our functions require subject IDs as names for our genotype vector, so we add names below (since they are set to `NULL` due to our use of `unlist` and `as.character`).
+
+```{r subset_data}
+snp <- as.character(unlist(chr22[100,12:99]))
+names(snp)
+names(snp)<- names(chr22)[12:99]
+```
+
+We then convert the 88-long vector `snp` into a numeric vector using the function `countalleles`.
+
+```{r countalleles}
+library(countalleles)
+count_alleles(snp)
+```
+
+## Determining the reference allele
+
+In the HapMap data, the annotation data includes a column that tells us the identities of the two alleles; however, in the course of our work we may encounter genotype data for which we don't know which allele is the "reference" allele and which is the "other" allele. For a given vector of genotypes (for a single SNP), there are two possible ways to encode the reference and other alleles. We use the function `make_ref_table` to make a reference table.
+
+```{r make_table}
+make_ref_table(snp)
+```
+
+## References
+

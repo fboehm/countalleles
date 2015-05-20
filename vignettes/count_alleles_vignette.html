@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="author" content="Fred Boehm" />
+
+<meta name="date" content="2015-05-19" />
+
+<title>countalleles: An R package for counting alleles in SNP genotypes</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<link href="data:text/css,body%20%7B%0A%20%20background%2Dcolor%3A%20%23fff%3B%0A%20%20margin%3A%201em%20auto%3B%0A%20%20max%2Dwidth%3A%20700px%3B%0A%20%20overflow%3A%20visible%3B%0A%20%20padding%2Dleft%3A%202em%3B%0A%20%20padding%2Dright%3A%202em%3B%0A%20%20font%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0A%20%20font%2Dsize%3A%2014px%3B%0A%20%20line%2Dheight%3A%201%2E35%3B%0A%7D%0A%0A%23header%20%7B%0A%20%20text%2Dalign%3A%20center%3B%0A%7D%0A%0A%23TOC%20%7B%0A%20%20clear%3A%20both%3B%0A%20%20margin%3A%200%200%2010px%2010px%3B%0A%20%20padding%3A%204px%3B%0A%20%20width%3A%20400px%3B%0A%20%20border%3A%201px%20solid%20%23CCCCCC%3B%0A%20%20border%2Dradius%3A%205px%3B%0A%0A%20%20background%2Dcolor%3A%20%23f6f6f6%3B%0A%20%20font%2Dsize%3A%2013px%3B%0A%20%20line%2Dheight%3A%201%2E3%3B%0A%7D%0A%20%20%23TOC%20%2Etoctitle%20%7B%0A%20%20%20%20font%2Dweight%3A%20bold%3B%0A%20%20%20%20font%2Dsize%3A%2015px%3B%0A%20%20%20%20margin%2Dleft%3A%205px%3B%0A%20%20%7D%0A%0A%20%20%23TOC%20ul%20%7B%0A%20%20%20%20padding%2Dleft%3A%2040px%3B%0A%20%20%20%20margin%2Dleft%3A%20%2D1%2E5em%3B%0A%20%20%20%20margin%2Dtop%3A%205px%3B%0A%20%20%20%20margin%2Dbottom%3A%205px%3B%0A%20%20%7D%0A%20%20%23TOC%20ul%20ul%20%7B%0A%20%20%20%20margin%2Dleft%3A%20%2D2em%3B%0A%20%20%7D%0A%20%20%23TOC%20li%20%7B%0A%20%20%20%20line%2Dheight%3A%2016px%3B%0A%20%20%7D%0A%0Atable%20%7B%0A%20%20margin%3A%201em%20auto%3B%0A%20%20border%2Dwidth%3A%201px%3B%0A%20%20border%2Dcolor%3A%20%23DDDDDD%3B%0A%20%20border%2Dstyle%3A%20outset%3B%0A%20%20border%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0A%20%20border%2Dwidth%3A%202px%3B%0A%20%20padding%3A%205px%3B%0A%20%20border%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0A%20%20border%2Dwidth%3A%201px%3B%0A%20%20border%2Dstyle%3A%20inset%3B%0A%20%20line%2Dheight%3A%2018px%3B%0A%20%20padding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0A%20%20border%2Dleft%2Dstyle%3A%20none%3B%0A%20%20border%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0A%20%20background%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0A%0Ap%20%7B%0A%20%20margin%3A%200%2E5em%200%3B%0A%7D%0A%0Ablockquote%20%7B%0A%20%20background%2Dcolor%3A%20%23f6f6f6%3B%0A%20%20padding%3A%200%2E25em%200%2E75em%3B%0A%7D%0A%0Ahr%20%7B%0A%20%20border%2Dstyle%3A%20solid%3B%0A%20%20border%3A%20none%3B%0A%20%20border%2Dtop%3A%201px%20solid%20%23777%3B%0A%20%20margin%3A%2028px%200%3B%0A%7D%0A%0Adl%20%7B%0A%20%20margin%2Dleft%3A%200%3B%0A%7D%0A%20%20dl%20dd%20%7B%0A%20%20%20%20margin%2Dbottom%3A%2013px%3B%0A%20%20%20%20margin%2Dleft%3A%2013px%3B%0A%20%20%7D%0A%20%20dl%20dt%20%7B%0A%20%20%20%20font%2Dweight%3A%20bold%3B%0A%20%20%7D%0A%0Aul%20%7B%0A%20%20margin%2Dtop%3A%200%3B%0A%7D%0A%20%20ul%20li%20%7B%0A%20%20%20%20list%2Dstyle%3A%20circle%20outside%3B%0A%20%20%7D%0A%20%20ul%20ul%20%7B%0A%20%20%20%20margin%2Dbottom%3A%200%3B%0A%20%20%7D%0A%0Apre%2C%20code%20%7B%0A%20%20background%2Dcolor%3A%20%23f7f7f7%3B%0A%20%20border%2Dradius%3A%203px%3B%0A%20%20color%3A%20%23333%3B%0A%7D%0Apre%20%7B%0A%20%20white%2Dspace%3A%20pre%2Dwrap%3B%20%20%20%20%2F%2A%20Wrap%20long%20lines%20%2A%2F%0A%20%20border%2Dradius%3A%203px%3B%0A%20%20margin%3A%205px%200px%2010px%200px%3B%0A%20%20padding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0A%20%20background%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0A%0Acode%20%7B%0A%20%20font%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0A%20%20font%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0A%20%20padding%3A%202px%200px%3B%0A%7D%0A%0Adiv%2Efigure%20%7B%0A%20%20text%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0A%20%20background%2Dcolor%3A%20%23FFFFFF%3B%0A%20%20padding%3A%202px%3B%0A%20%20border%3A%201px%20solid%20%23DDDDDD%3B%0A%20%20border%2Dradius%3A%203px%3B%0A%20%20border%3A%201px%20solid%20%23CCCCCC%3B%0A%20%20margin%3A%200%205px%3B%0A%7D%0A%0Ah1%20%7B%0A%20%20margin%2Dtop%3A%200%3B%0A%20%20font%2Dsize%3A%2035px%3B%0A%20%20line%2Dheight%3A%2040px%3B%0A%7D%0A%0Ah2%20%7B%0A%20%20border%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0A%20%20padding%2Dtop%3A%2010px%3B%0A%20%20padding%2Dbottom%3A%202px%3B%0A%20%20font%2Dsize%3A%20145%25%3B%0A%7D%0A%0Ah3%20%7B%0A%20%20border%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0A%20%20padding%2Dtop%3A%2010px%3B%0A%20%20font%2Dsize%3A%20120%25%3B%0A%7D%0A%0Ah4%20%7B%0A%20%20border%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0A%20%20margin%2Dleft%3A%208px%3B%0A%20%20font%2Dsize%3A%20105%25%3B%0A%7D%0A%0Ah5%2C%20h6%20%7B%0A%20%20border%2Dbottom%3A%201px%20solid%20%23ccc%3B%0A%20%20font%2Dsize%3A%20105%25%3B%0A%7D%0A%0Aa%20%7B%0A%20%20color%3A%20%230033dd%3B%0A%20%20text%2Ddecoration%3A%20none%3B%0A%7D%0A%20%20a%3Ahover%20%7B%0A%20%20%20%20color%3A%20%236666ff%3B%20%7D%0A%20%20a%3Avisited%20%7B%0A%20%20%20%20color%3A%20%23800080%3B%20%7D%0A%20%20a%3Avisited%3Ahover%20%7B%0A%20%20%20%20color%3A%20%23BB00BB%3B%20%7D%0A%20%20a%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0A%20%20%20%20text%2Ddecoration%3A%20underline%3B%20%7D%0A%20%20a%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0A%20%20%20%20text%2Ddecoration%3A%20underline%3B%20%7D%0A%0A%2F%2A%20Class%20described%20in%20https%3A%2F%2Fbenjeffrey%2Ecom%2Fposts%2Fpandoc%2Dsyntax%2Dhighlighting%2Dcss%0A%20%20%20Colours%20from%20https%3A%2F%2Fgist%2Egithub%2Ecom%2Frobsimmons%2F1172277%20%2A%2F%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%2F%2A%20Keyword%20%2A%2F%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%2F%2A%20DataType%20%2A%2F%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%2F%2A%20DecVal%20%28decimal%20values%29%20%2A%2F%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20BaseN%20%2A%2F%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20Float%20%2A%2F%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20Char%20%2A%2F%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20String%20%2A%2F%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%2F%2A%20Comment%20%2A%2F%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%2F%2A%20OtherToken%20%2A%2F%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%2F%2A%20AlertToken%20%2A%2F%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%2F%2A%20Function%20calls%20%2A%2F%20%0Acode%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%2F%2A%20ErrorTok%20%2A%2F%0A%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+<div id="header">
+<h1 class="title"><code>countalleles</code>: An R package for counting alleles in SNP genotypes</h1>
+<h4 class="author"><em>Fred Boehm</em></h4>
+<h4 class="date"><em>2015-05-19</em></h4>
+</div>
+
+
+<p>Researchers who work with genomic data often encounter the need to convert A/C/T/G SNP genotypes to count-based SNP genotypes (0,1, or 2 copies of a given allele). To address this need, I’ve created the <code>countalleles</code> R package. The package contains three easy-to-use functions that, together, count the number of reference alleles in each subject’s genotype at a single SNP locus. Throughout package assembly, we referred to Hadley Wickham’s text “R packages” <span class="citation">(Wickham 2015)</span>.</p>
+<div id="reading-hapmap-data" class="section level2">
+<h2>Reading HapMap data</h2>
+<p>To illustrate uses of our functions, we work with freely available data from the HapMap Project. We focus on a single SNP genotype file, which we’ve also included in our package.</p>
+<p>We load the data into a table data frame using the dplyr package:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)</code></pre></div>
+<pre><code>## 
+## Attaching package: 'dplyr'
+## 
+## The following object is masked from 'package:stats':
+## 
+##     filter
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">chr22&lt;-<span class="st"> </span><span class="kw">tbl_df</span>(<span class="kw">read.delim</span>(<span class="st">&quot;../inst/extdata/genotypes_chr22_TSI_phase3.2_consensus.b36_fwd.txt&quot;</span>, <span class="dt">sep =</span> <span class="kw">c</span>(<span class="st">&quot; &quot;</span>)))</code></pre></div>
+<p>We see that the file contains chromosome 22 SNP genotypes for 88 Tuscans at 20,109 SNP loci. Additional columns contain SNP annotation information, such as rs ID, alleles, position, and strand. Each row consists of 11 columns of SNP annotation followed by 88 genotypes (one genotype per subject) at a single SNP.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(chr22)</code></pre></div>
+<pre><code>## Source: local data frame [6 x 99]
+## 
+##          rs. alleles chrom      pos strand assembly. center
+## 1  rs4819391     A/G chr22 14550436      +  ncbi_b36    bbs
+## 2 rs11089128     A/G chr22 14560203      +  ncbi_b36    bbs
+## 3 rs11912265     A/C chr22 14715506      +  ncbi_b36    bbs
+## 4  rs4321465     C/T chr22 14836970      +  ncbi_b36    bbs
+## 5  rs8138488     C/T chr22 14870204      +  ncbi_b36    bbs
+## 6  rs2027649     A/G chr22 14880040      +  ncbi_b36    bbs
+## Variables not shown: protLSID (fctr), assayLSID (fctr), panelLSID (fctr),
+##   QCcode (fctr), NA20505 (fctr), NA20504 (fctr), NA20506 (fctr), NA20502
+##   (fctr), NA20528 (fctr), NA20531 (fctr), NA20534 (fctr), NA20535 (fctr),
+##   NA20586 (fctr), NA20756 (fctr), NA20760 (fctr), NA20765 (fctr), NA20766
+##   (fctr), NA20769 (fctr), NA20771 (fctr), NA20512 (fctr), NA20515 (fctr),
+##   NA20516 (fctr), NA20517 (fctr), NA20518 (fctr), NA20530 (fctr), NA20538
+##   (fctr), NA20539 (fctr), NA20542 (fctr), NA20544 (fctr), NA20588 (fctr),
+##   NA20752 (fctr), NA20753 (fctr), NA20755 (fctr), NA20759 (fctr), NA20770
+##   (fctr), NA20775 (fctr), NA20785 (fctr), NA20796 (fctr), NA20799 (fctr),
+##   NA20808 (fctr), NA20810 (fctr), NA20812 (fctr), NA20813 (fctr), NA20815
+##   (fctr), NA20816 (fctr), NA20819 (fctr), NA20826 (fctr), NA20509 (fctr),
+##   NA20521 (fctr), NA20529 (fctr), NA20540 (fctr), NA20541 (fctr), NA20581
+##   (fctr), NA20582 (fctr), NA20589 (fctr), NA20754 (fctr), NA20772 (fctr),
+##   NA20773 (fctr), NA20778 (fctr), NA20787 (fctr), NA20790 (fctr), NA20792
+##   (fctr), NA20795 (fctr), NA20797 (fctr), NA20800 (fctr), NA20801 (fctr),
+##   NA20804 (fctr), NA20806 (fctr), NA20807 (fctr), NA20809 (fctr), NA20510
+##   (fctr), NA20519 (fctr), NA20543 (fctr), NA20758 (fctr), NA20761 (fctr),
+##   NA20768 (fctr), NA20774 (fctr), NA20786 (fctr), NA20802 (fctr), NA20805
+##   (fctr), NA20818 (fctr), NA20508 (fctr), NA20520 (fctr), NA20524 (fctr),
+##   NA20525 (fctr), NA20527 (fctr), NA20811 (fctr), NA20522 (fctr), NA20783
+##   (fctr), NA20803 (fctr), NA20828 (fctr), NA20757 (fctr)</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tail</span>(chr22)</code></pre></div>
+<pre><code>## Source: local data frame [6 x 99]
+## 
+##          rs. alleles chrom      pos strand assembly. center
+## 1 rs28420908     A/G chr22 49535148      +  ncbi_b36    bbs
+## 2  rs6010077     A/G chr22 49540311      +  ncbi_b36    bbs
+## 3  rs9628249     A/G chr22 49552813      +  ncbi_b36    bbs
+## 4  rs3888396     C/T chr22 49558258      +  ncbi_b36    bbs
+## 5  rs2238837     A/C chr22 49559741      +  ncbi_b36    bbs
+## 6 rs28729663     A/G chr22 49565872      +  ncbi_b36    bbs
+## Variables not shown: protLSID (fctr), assayLSID (fctr), panelLSID (fctr),
+##   QCcode (fctr), NA20505 (fctr), NA20504 (fctr), NA20506 (fctr), NA20502
+##   (fctr), NA20528 (fctr), NA20531 (fctr), NA20534 (fctr), NA20535 (fctr),
+##   NA20586 (fctr), NA20756 (fctr), NA20760 (fctr), NA20765 (fctr), NA20766
+##   (fctr), NA20769 (fctr), NA20771 (fctr), NA20512 (fctr), NA20515 (fctr),
+##   NA20516 (fctr), NA20517 (fctr), NA20518 (fctr), NA20530 (fctr), NA20538
+##   (fctr), NA20539 (fctr), NA20542 (fctr), NA20544 (fctr), NA20588 (fctr),
+##   NA20752 (fctr), NA20753 (fctr), NA20755 (fctr), NA20759 (fctr), NA20770
+##   (fctr), NA20775 (fctr), NA20785 (fctr), NA20796 (fctr), NA20799 (fctr),
+##   NA20808 (fctr), NA20810 (fctr), NA20812 (fctr), NA20813 (fctr), NA20815
+##   (fctr), NA20816 (fctr), NA20819 (fctr), NA20826 (fctr), NA20509 (fctr),
+##   NA20521 (fctr), NA20529 (fctr), NA20540 (fctr), NA20541 (fctr), NA20581
+##   (fctr), NA20582 (fctr), NA20589 (fctr), NA20754 (fctr), NA20772 (fctr),
+##   NA20773 (fctr), NA20778 (fctr), NA20787 (fctr), NA20790 (fctr), NA20792
+##   (fctr), NA20795 (fctr), NA20797 (fctr), NA20800 (fctr), NA20801 (fctr),
+##   NA20804 (fctr), NA20806 (fctr), NA20807 (fctr), NA20809 (fctr), NA20510
+##   (fctr), NA20519 (fctr), NA20543 (fctr), NA20758 (fctr), NA20761 (fctr),
+##   NA20768 (fctr), NA20774 (fctr), NA20786 (fctr), NA20802 (fctr), NA20805
+##   (fctr), NA20818 (fctr), NA20508 (fctr), NA20520 (fctr), NA20524 (fctr),
+##   NA20525 (fctr), NA20527 (fctr), NA20811 (fctr), NA20522 (fctr), NA20783
+##   (fctr), NA20803 (fctr), NA20828 (fctr), NA20757 (fctr)</code></pre>
+</div>
+<div id="counting-alleles-for-a-dimorphic-snp" class="section level2">
+<h2>Counting alleles for a dimorphic SNP</h2>
+<p>We assume that, for the 88 study subjects with data in our file, each SNP is dimorphic; that is, for each SNP, there are exactly two observed alleles and that these two alleles correspond to those for which the SNP probes were designed.</p>
+<p>We read one SNP’s genotypes into a vector <code>snp</code> by subsetting our table data frame <code>chr22</code> while omitting the first 11 entries in the row. Note that we need to convert the subsetted data frame to a character vector, which we do by first using <code>unlist</code> then using <code>as.character</code>. Our functions require subject IDs as names for our genotype vector, so we add names below (since they are set to <code>NULL</code> due to our use of <code>unlist</code> and <code>as.character</code>).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">snp &lt;-<span class="st"> </span><span class="kw">as.character</span>(<span class="kw">unlist</span>(chr22[<span class="dv">100</span>,<span class="dv">12</span>:<span class="dv">99</span>]))
+<span class="kw">names</span>(snp)</code></pre></div>
+<pre><code>## NULL</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(snp)&lt;-<span class="st"> </span><span class="kw">names</span>(chr22)[<span class="dv">12</span>:<span class="dv">99</span>]</code></pre></div>
+<p>We then convert the 88-long vector <code>snp</code> into a numeric vector using the function <code>countalleles</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(countalleles)
+<span class="kw">count_alleles</span>(snp)</code></pre></div>
+<pre><code>## NA20505 NA20504 NA20506 NA20502 NA20528 NA20531 NA20534 NA20535 NA20586 
+##       2       2       2       1       2       2       2       2       2 
+## NA20756 NA20760 NA20765 NA20766 NA20769 NA20771 NA20512 NA20515 NA20516 
+##       2       2       2       2       2       2       2       1       1 
+## NA20517 NA20518 NA20530 NA20538 NA20539 NA20542 NA20544 NA20588 NA20752 
+##       2       2       2       2       2       2       1       2       2 
+## NA20753 NA20755 NA20759 NA20770 NA20775 NA20785 NA20796 NA20799 NA20808 
+##       2       2       2       2       1       2       2       2       2 
+## NA20810 NA20812 NA20813 NA20815 NA20816 NA20819 NA20826 NA20509 NA20521 
+##       2       2       2       2       2       2       2       2       2 
+## NA20529 NA20540 NA20541 NA20581 NA20582 NA20589 NA20754 NA20772 NA20773 
+##       2       1       2       2       2       2       2       2       1 
+## NA20778 NA20787 NA20790 NA20792 NA20795 NA20797 NA20800 NA20801 NA20804 
+##       2       2       2       1       2       2       2       2       1 
+## NA20806 NA20807 NA20809 NA20510 NA20519 NA20543 NA20758 NA20761 NA20768 
+##       2       1       2       2       2       2       2       1       2 
+## NA20774 NA20786 NA20802 NA20805 NA20818 NA20508 NA20520 NA20524 NA20525 
+##       1       2       2       2       2       2       2       1       2 
+## NA20527 NA20811 NA20522 NA20783 NA20803 NA20828 NA20757 
+##       2       2       2       2       2       2       2</code></pre>
+</div>
+<div id="determining-the-reference-allele" class="section level2">
+<h2>Determining the reference allele</h2>
+<p>In the HapMap data, the annotation data includes a column that tells us the identities of the two alleles; however, in the course of our work we may encounter genotype data for which we don’t know which allele is the “reference” allele and which is the “other” allele. For a given vector of genotypes (for a single SNP), there are two possible ways to encode the reference and other alleles. We use the function <code>make_ref_table</code> to make a reference table.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">make_ref_table</span>(snp)</code></pre></div>
+<pre><code>##         gv_actg all_num refallele otherallele
+## NA20505      GG       2         G           A
+## NA20504      GG       2         G           A
+## NA20506      GG       2         G           A
+## NA20502      AG       1         G           A
+## NA20528      GG       2         G           A
+## NA20531      GG       2         G           A
+## NA20534      GG       2         G           A
+## NA20535      GG       2         G           A
+## NA20586      GG       2         G           A
+## NA20756      GG       2         G           A
+## NA20760      GG       2         G           A
+## NA20765      GG       2         G           A
+## NA20766      GG       2         G           A
+## NA20769      GG       2         G           A
+## NA20771      GG       2         G           A
+## NA20512      GG       2         G           A
+## NA20515      AG       1         G           A
+## NA20516      AG       1         G           A
+## NA20517      GG       2         G           A
+## NA20518      GG       2         G           A
+## NA20530      GG       2         G           A
+## NA20538      GG       2         G           A
+## NA20539      GG       2         G           A
+## NA20542      GG       2         G           A
+## NA20544      AG       1         G           A
+## NA20588      GG       2         G           A
+## NA20752      GG       2         G           A
+## NA20753      GG       2         G           A
+## NA20755      GG       2         G           A
+## NA20759      GG       2         G           A
+## NA20770      GG       2         G           A
+## NA20775      AG       1         G           A
+## NA20785      GG       2         G           A
+## NA20796      GG       2         G           A
+## NA20799      GG       2         G           A
+## NA20808      GG       2         G           A
+## NA20810      GG       2         G           A
+## NA20812      GG       2         G           A
+## NA20813      GG       2         G           A
+## NA20815      GG       2         G           A
+## NA20816      GG       2         G           A
+## NA20819      GG       2         G           A
+## NA20826      GG       2         G           A
+## NA20509      GG       2         G           A
+## NA20521      GG       2         G           A
+## NA20529      GG       2         G           A
+## NA20540      AG       1         G           A
+## NA20541      GG       2         G           A
+## NA20581      GG       2         G           A
+## NA20582      GG       2         G           A
+## NA20589      GG       2         G           A
+## NA20754      GG       2         G           A
+## NA20772      GG       2         G           A
+## NA20773      AG       1         G           A
+## NA20778      GG       2         G           A
+## NA20787      GG       2         G           A
+## NA20790      GG       2         G           A
+## NA20792      AG       1         G           A
+## NA20795      GG       2         G           A
+## NA20797      GG       2         G           A
+## NA20800      GG       2         G           A
+## NA20801      GG       2         G           A
+## NA20804      AG       1         G           A
+## NA20806      GG       2         G           A
+## NA20807      AG       1         G           A
+## NA20809      GG       2         G           A
+## NA20510      GG       2         G           A
+## NA20519      GG       2         G           A
+## NA20543      GG       2         G           A
+## NA20758      GG       2         G           A
+## NA20761      AG       1         G           A
+## NA20768      GG       2         G           A
+## NA20774      AG       1         G           A
+## NA20786      GG       2         G           A
+## NA20802      GG       2         G           A
+## NA20805      GG       2         G           A
+## NA20818      GG       2         G           A
+## NA20508      GG       2         G           A
+## NA20520      GG       2         G           A
+## NA20524      AG       1         G           A
+## NA20525      GG       2         G           A
+## NA20527      GG       2         G           A
+## NA20811      GG       2         G           A
+## NA20522      GG       2         G           A
+## NA20783      GG       2         G           A
+## NA20803      GG       2         G           A
+## NA20828      GG       2         G           A
+## NA20757      GG       2         G           A</code></pre>
+<div class="references">
+<h2 id="references" class="unnumbered">References</h2>
+<p>Wickham, Hadley. 2015. <em>R Packages</em>. “ O’Reilly Media, Inc.”</p>
+</div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
