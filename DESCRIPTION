@@ -1,5 +1,5 @@
 Package: countalleles
-Title: Converts A/C/T/G SNP genotypes to allele count genotypes (0,1,2).
+Title: Converts A/C/T/G SNP genotypes to allele count genotypes (0,1,2)
 Version: 0.0.0.9000
 Authors@R:
     c(person("Fred", "Boehm", , "frederick.boehm@gmail.com", role = c("aut", "cre")))
