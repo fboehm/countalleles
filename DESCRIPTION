@@ -5,7 +5,7 @@ Authors@R:
     c(person("Fred", "Boehm", , "frederick.boehm@gmail.com", role = c("aut", "cre")))
 Description: The package provides functions that convert A/C/T/G SNP genotypes to allele counts (0,1,2) per subject.
 Depends: R (>= 3.2.0)
-License: MIT License
+License: MIT + file LICENSE
 LazyData: true
 Suggests: testthat,
     knitr
